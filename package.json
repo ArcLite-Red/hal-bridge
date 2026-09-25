@@ -1,0 +1,41 @@
+{
+  "name": "hal-bridge",
+  "displayName": "hal Bridge",
+  "description": "Localhost bridge exposing vscode.lm to the hal R package.",
+  "version": "0.1.4",
+  "publisher": "ArcLite-Red",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArcLite-Red/hal-bridge.git"
+  },
+  "engines": {
+    "vscode": "^1.103.0"
+  },
+  "categories": ["Other"],
+  "main": "./out/extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "configuration": {
+      "title": "hal Bridge",
+      "properties": {
+        "halBridge.port": {
+          "type": "number",
+          "default": 0,
+          "description": "Localhost port to listen on. 0 means an OS-assigned random port (recommended)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile",
+    "package": "npm run compile && npx --yes @vscode/vsce@^3.0.0 package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.103.0",
+    "typescript": "^5.4.0"
+  }
+}

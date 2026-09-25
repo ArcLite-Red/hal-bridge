@@ -1,0 +1,66 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write   # required to upload release assets
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile TypeScript
+        run: npm run compile
+
+      - name: Package VSIX
+        run: npx --yes @vscode/vsce@^3.0.0 package --allow-missing-repository
+
+      - name: Verify VSIX present
+        run: ls -lh *.vsix
+
+      - name: Compute SHA-256
+        id: hash
+        run: |
+          file=$(ls *.vsix | head -n1)
+          sha=$(sha256sum "$file" | awk '{print $1}')
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha"   >> "$GITHUB_OUTPUT"
+          echo "$file  sha256: $sha"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.hash.outputs.file }}
+          body: |
+            hal-bridge ${{ github.ref_name }}
+
+            Localhost bridge exposing `vscode.lm` to the hal R package.
+
+            **VSIX:** `${{ steps.hash.outputs.file }}`
+            **SHA-256:** `${{ steps.hash.outputs.sha }}`
+
+            Install via R (after installing the hal package):
+
+            ```r
+            hal_install_bridge()
+            ```
+
+            Or sideload manually:
+
+            ```
+            positron --install-extension ${{ steps.hash.outputs.file }}
+            ```
